@@ -9,6 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+venv/
+.ropeproject/
 build/
 develop-eggs/
 dist/
