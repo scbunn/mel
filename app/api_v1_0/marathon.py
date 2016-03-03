@@ -6,6 +6,7 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 from flask import jsonify, request, abort, current_app
 from . import api
 from . import EVENT_BUFFERS as eb
+from app.Models import MarathonApiEvent
 
 
 @api.route('marathon/events/', methods=['GET'])
@@ -21,10 +22,12 @@ def get_events():
 @api.route('marathon/events/', methods=['POST'])
 def create_event():
     """Accept incoming events and store then in a buffer to be processed"""
-    if not request.json or 'eventType' not in request.json:
-        current_app.logger.debug("bad event: {}".format(request.json))
+    if not request.json:
+        current_app.logger.debug("bad format: {}".format(request.json))
         abort(400)
-    eb['marathon_events'].append(request.json)
+    e = MarathonApiEvent()
+    e.import_data(request.json)
+    eb['marathon_events'].append(e)
     return jsonify({'status': 'OK'}), 201
 
 
