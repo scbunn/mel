@@ -12,9 +12,9 @@ from app.Models import MarathonApiEvent
 @api.route('marathon/events/', methods=['GET'])
 def get_events():
     """Return all events currently in the buffer"""
-    response = {}
-    for bk, bv in eb.items():
-        response[bk] = bv.to_list()
+    response = []
+    for event in eb['marathon_events']:
+        response.append(event.export_data())
 
     return jsonify({'events': response})
 

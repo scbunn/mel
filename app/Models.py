@@ -41,14 +41,13 @@ class MarathonApiEvent(MarathonEvent):
         """export data as a dictionary"""
         return {
             'id': self.id,
-            'event_type': self.event_type,
+            'eventType': self.event_type,
             'timestamp': self.timestamp,
-            'client': self.client,
+            'clientIp': self.client,
             'app_id': self.app_id,
             'env': self.env,
             'ports': self.ports,
             'health_checks': self.health_checks,
-            'raw_event': self.raw_event,
         }
 
     def import_data(self, data):
@@ -66,7 +65,7 @@ class MarathonApiEvent(MarathonEvent):
     @staticmethod
     def generate_fake_event():
         """Generate a fake API event"""
-        ts = datetime.utcnow()
+        ts = datetime.utcnow().isoformat()
         client = "{}.{}.{}.{}".format(
             randint(1, 254), randint(1, 254),
             randint(1, 254), randint(1, 254)
