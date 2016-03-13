@@ -42,15 +42,24 @@ class MarathonApiTestCase(unittest.TestCase):
 
     def test_marathon_api_get_empty(self):
         rv = self.client.get(
-            '/api/v1.0/marathon/events/',
+            '/api/v1.0/events/',
             follow_redirects=True)
         self.assertTrue(rv.status_code == 200)
         data = json.loads(rv.get_data(as_text=True))
         self.assertListEqual([], data['events'])
 
+    def test_marathon_api_invalid_event(self):
+        rv = self.client.post(
+            '/api/v1.0/events/',
+            data={'message': 'invalid event'},
+            content_type='application/json',
+            follow_redirects=True
+        )
+        self.assertTrue(rv.status_code == 400)
+
     def test_marathon_api_post_event(self):
         rv = self.client.post(
-            '/api/v1.0/marathon/events/',
+            '/api/v1.0/events/',
             data=json.dumps(MarathonApiEvent.generate_fake_event()),
             content_type='application/json',
             follow_redirects=True
@@ -58,15 +67,15 @@ class MarathonApiTestCase(unittest.TestCase):
         self.assertTrue(rv.status_code == 201)
 
         rv = self.client.get(
-            '/api/v1.0/marathon/events/',
+            '/api/v1.0/events/',
             follow_redirects=True)
         self.assertTrue(rv.status_code == 200)
         self.assertTrue(eb['marathon_events'].get_size() == 1)
 
     def test_marathon_api_post_multi_events(self):
-        for et in range(1, 2048):
+        for et in range(1, 1030):
             rv = self.client.post(
-                '/api/v1.0/marathon/events/',
+                '/api/v1.0/events/',
                 data=json.dumps(MarathonApiEvent.generate_fake_event()),
                 content_type='application/json',
                 follow_redirects=True
@@ -74,7 +83,7 @@ class MarathonApiTestCase(unittest.TestCase):
             self.assertTrue(rv.status_code == 201)
 
             rv = self.client.get(
-                '/api/v1.0/marathon/events/',
+                '/api/v1.0/events/',
                 follow_redirects=True)
             self.assertTrue(rv.status_code == 200)
             data = rv.get_data(as_text=True)

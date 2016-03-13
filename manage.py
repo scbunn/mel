@@ -2,6 +2,7 @@
 """Management script for MEL"""
 
 import os
+import sys
 from app import create_app
 from flask.ext.script import Manager
 
@@ -14,7 +15,13 @@ def test():
     """Run unit tests"""
     import unittest
     tests = unittest.TestLoader().discover('tests')
-    unittest.TextTestRunner(verbosity=2).run(tests)
+    successfull = unittest.TextTestRunner(
+        verbosity=2).run(tests).wasSuccessful()
+    if successfull:
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
 
 
 if __name__ == "__main__":

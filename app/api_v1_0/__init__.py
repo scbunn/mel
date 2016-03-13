@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.RingBuffer import RingBuffer
+from app.ringbuffer import RingBuffer
 
 api = Blueprint('api', __name__)
 
@@ -8,4 +8,4 @@ EVENT_BUFFERS = {
     'marathon_events': RingBuffer(1024),
 }
 
-from . import marathon
+from . import marathon, errors
