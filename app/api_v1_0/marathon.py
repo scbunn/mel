@@ -3,16 +3,18 @@ This implements a simple REST(ish) API to support the marathon event bus.
 https://mesosphere.github.io/marathon/docs/event-bus.html
 
 """
+
 import requests
 import sys
 from psutil import virtual_memory
 from flask import jsonify, request, abort, current_app, url_for
+from app.Models import MarathonApiEvent
 from . import api
 from . import EVENT_BUFFERS as eb
-from app.Models import MarathonApiEvent
+from .errors import ValidationError
 
 
-@api.route('marathon/events/', methods=['GET'])
+@api.route('events/', methods=['GET'])
 def get_events():
     """Return all events currently in the buffer"""
     response = []
@@ -22,19 +24,28 @@ def get_events():
     return jsonify({'events': response})
 
 
-@api.route('marathon/events/', methods=['POST'])
+@api.route('events/', methods=['POST'])
 def create_event():
     """Accept incoming events and store then in a buffer to be processed"""
     if not request.json:
         current_app.logger.debug("Invalid request: {}".format(request))
-        abort(400)
+        raise ValidationError("Invalid request format!")
     e = MarathonApiEvent()
     e.import_data(request.json)
     eb['marathon_events'].append(e)
-    return jsonify({'status': 'OK'}), 201
+    return jsonify({}), 201, {'Location': e.get_url()}
 
 
-@api.route('marathon/events/<event_type>')
+@api.route('events/<int:event_id>')
+def get_event_by_id(event_id):
+    """Return an event based on event id"""
+    for event in eb['marathon_events']:
+        if event.id == event_id:
+            return jsonify({'event': event.export_data()})
+    abort(404)
+
+
+@api.route('events/<event_type>')
 def get_event(event_type):
     """Return all events of event_type"""
     current_app.logger.debug("search for event type: {}".format(event_type))
@@ -46,12 +57,10 @@ def get_event(event_type):
     if elements:
         return jsonify({"count": len(elements),
                         event_type: elements})
-    else:
-        return jsonify({'status': 'no elements found',
-                        'search term': event_type}), 404
+    abort(404)
 
 
-@api.route('marathon/events/testevent', methods=['POST'])
+@api.route('events/testevent', methods=['POST'])
 def generate_and_post_test_event():
     """Generate a test event and post it to our self"""
     current_app.logger.debug("posting to {}".format(
@@ -60,7 +69,12 @@ def generate_and_post_test_event():
         url_for('api.create_event', _external=True),
         json=MarathonApiEvent.generate_fake_event()
     )
-    return jsonify({'status': '{}'.format(r.status_code)}), r.status_code
+    rv = {
+        'status': r.status_code,
+        'message': 'event generated',
+        'location': r.headers['location']
+    }
+    return jsonify(rv), r.status_code
 
 
 @api.route('health', methods=['GET'])

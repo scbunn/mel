@@ -26,6 +26,11 @@ class RingBuffer(deque):
         return len(self.to_list())
 
 
+class EventBuffer(object):
+    """Manage API events"""
+    pass
+
+
 if __name__ == "__main__":
     """Test the ring buffer implementation"""
     rb = RingBuffer(25)

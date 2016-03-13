@@ -1,5 +1,5 @@
 import unittest
-from app.RingBuffer import RingBuffer
+from app.ringbuffer import RingBuffer
 
 
 class RingBufferTestCase(unittest.TestCase):
