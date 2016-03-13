@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}MEL: Overview{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>
+       Marathon Event Listener Overview 
+    </h1>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Registered Endpoints</div>
+            <div class="panel-body">
+                <table class="table" id="marathon_endpoints">
+                    <tr>
+                        <th>URL</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr>
+                        <td>http://www.foo.com:8080/v2/apps</td>
+                        <td><span class="label label-success">Up</span></td>
+                    </tr>
+                </table>
+            </div><!-- panel body -->
+        </div> <!-- end of "registered endpoints" panel -->
+    </div><!-- left panel -->
+
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Registered Callbacks</div>
+            <div class="panel-body">
+                <table class="table" id="marathon_callbacks">
+                    <tr>
+                        <th>URL</th>
+                    </tr>
+                    <tr>
+                        <td>http://www.foo.com:8080/v2/apps</td>
+                    </tr>
+                </table>
+            </div><!-- panel body -->
+        </div> <!-- end of "marathon endpoints" panel -->
+
+    </div><!-- right panel -->
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Marathon Events</div>
+            <div class="panel-body text-center">
+                <button class="btn btn-primary" type="button">
+                    Events Processed <span calss="badge">203</span>
+                </button>
+                <button class="btn btn-primary"  type="button">
+                    Reactions <span calss="badge">3</span>
+                </button>
+                <button class="btn btn-primary" type="button">
+                    Buffer Size <span calss="badge">1024</span>
+                </button>
+                <button class="btn btn-primary" type="button">
+                    Events Buffered <span calss="badge">1024</span>
+                </button>
+            </div><!-- panel body -->
+
+            <table class="table table-hover" id="marathon_events">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Event ID</th>
+                    <th>Event Type</th>
+                    <th>Processed</th>
+                    <th>View Event</th>
+                </tr>
+            </table>
+        </div><!-- end of "event table" panel -->
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $('document').ready(function() {
+      $('<tr><td>030422:03T</td><td>3</td><td>MEL HealthCheck</td><td><span class="label label-danger">Queued</span></td><td><button type="button" class="bt btn-primary btn-xs">View Event</button></td></tr>').appendTo('#marathon_events tbody');
+    });
+</script>
+
+{% endblock %}
