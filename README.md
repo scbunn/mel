@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/scbunn/mel.png?label=ready&title=Ready)](https://waffle.io/scbunn/mel)
 # MEL
 marathon event listener flask app
 
