@@ -48,6 +48,15 @@ class MarathonApiTestCase(unittest.TestCase):
         data = json.loads(rv.get_data(as_text=True))
         self.assertListEqual([], data['events'])
 
+    def test_marathon_api_invalid_event(self):
+        rv = self.client.post(
+            '/api/v1.0/marathon/events/',
+            data={'message': 'invalid event'},
+            content_type='application/json',
+            follow_redirects=True
+        )
+        self.assertTrue(rv.status_code == 400)
+
     def test_marathon_api_post_event(self):
         rv = self.client.post(
             '/api/v1.0/marathon/events/',

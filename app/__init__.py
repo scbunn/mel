@@ -1,5 +1,6 @@
 from flask import Flask
 from config import config
+from . import errors
 
 
 def create_app(config_name):
