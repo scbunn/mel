@@ -1,5 +1,6 @@
 from datetime import datetime
 from random import randint
+from flask import url_for
 from .exceptions import InvalidEvent
 
 
@@ -13,6 +14,10 @@ class MarathonEvent(object):
         self.event_type = None
         self.timestamp = None
         self.raw_event = None
+
+    def get_url(self):
+        """return a url to retrieve this event from"""
+        return url_for('api.get_event_by_id', event_id=self.id, _external=True)
 
     def export_data(self):
         """export this event as a dictionary"""
