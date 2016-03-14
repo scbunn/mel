@@ -13,11 +13,15 @@ class MarathonEvent(object):
         self.id = MarathonEvent.id
         self.event_type = None
         self.timestamp = None
+        self.processed = False
         self.raw_event = None
 
     def get_url(self):
         """return a url to retrieve this event from"""
         return url_for('api.get_event_by_id', event_id=self.id, _external=True)
+
+    def isProcessed(self):
+        return self.processed
 
     def export_data(self):
         """export this event as a dictionary"""
@@ -48,11 +52,8 @@ class MarathonApiEvent(MarathonEvent):
             'id': self.id,
             'eventType': self.event_type,
             'timestamp': self.timestamp,
-            'clientIp': self.client,
-            'app_id': self.app_id,
-            'env': self.env,
-            'ports': self.ports,
-            'health_checks': self.health_checks,
+            'url': self.get_url(),
+            'processed': self.isProcessed()
         }
 
     def import_data(self, data):

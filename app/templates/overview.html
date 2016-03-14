@@ -49,7 +49,7 @@
     <div class="col-md-12">
         <div class="panel panel-default">
             <div class="panel-heading">Marathon Events</div>
-            <div class="panel-body text-center">
+            <div class="panel-body text-center" id="event_panel">
                 <button class="btn btn-primary" type="button">
                     Events Processed <span calss="badge">203</span>
                 </button>
@@ -75,6 +75,21 @@
             </table>
         </div><!-- end of "event table" panel -->
 
+        <!-- event modal div -->
+        <div id="event_id_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">[&times;]</button>
+                        <h4 class="modal-title">Event JSON</h4>
+                    </div>
+                    <div class="modal-body">
+                        <pre>Error getting event</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
@@ -82,8 +97,41 @@
 {% block scripts %}
 {{ super() }}
 <script>
+
+    function buildRow(event) {
+      elem = [];
+      elem.push('<tr>');
+      elem.push('<td>' + event.timestamp + '</td>');
+      elem.push('<td>' + event.id + '</td>');
+      elem.push('<td>' + event.eventType + '</td>');
+      elem.push('<td>');
+      if (event.processed) {
+        elem.push('<span class="label label-success">Processed</span>');
+      } else {
+        elem.push('<span class="label label-danger">Queued</span>');
+      }
+      elem.push('</td>');
+      elem.push('<td><button id="event_' + event.id + '" type="button" class="bt btn-primary btn-xs" data-toggle="modal" data-target="#event_id_modal">View Event</button></td>');
+      elem.push('</tr>');
+
+      return elem;
+    }
+
     $('document').ready(function() {
-      $('<tr><td>030422:03T</td><td>3</td><td>MEL HealthCheck</td><td><span class="label label-danger">Queued</span></td><td><button type="button" class="bt btn-primary btn-xs">View Event</button></td></tr>').appendTo('#marathon_events tbody');
+      // update navbar to reflect the current page
+      $('div#navbar li#overview').addClass('active');
+      var events;
+      
+      $.getJSON("{{ url_for('api.get_events') }}", function(data) {
+        var rows = [];
+        console.log(data);
+        events = data;
+        $("#event_id_modal pre").text(JSON.stringify(data, null, 2));
+        $.each(data['events'], function(i, event) {
+          $("#marathon_events tbody").append(buildRow(event).join(""));
+        });
+      });
+
     });
 </script>
 
