@@ -26,29 +26,66 @@ class RingBuffer(deque):
         return len(self.to_list())
 
 
-class EventBuffer(object):
-    """Manage API events"""
-    pass
+class MarathonEventBuffer(object):
+    """Class to manage marathon events in the buffer"""
+
+    def __init__(self, buffer_size=1024):
+        self.buffer = RingBuffer(buffer_size)
+
+    def get_size(self):
+        """Return the number of events buffered"""
+        return self.buffer.get_size()
+
+    def add_event(self, event):
+        self.buffer.append(event)
+
+    def get_summary_events(self):
+        """Return a summary of all buffered events"""
+        events = []
+        for event in self.buffer:
+            item = {}
+            item['id'] = event.id
+            item['timestamp'] = event.timestamp
+            item['eventType'] = event.eventType
+            item['marathon_host'] = event.marathon_host
+            item['url'] = event.get_url()
+            events.append(item)
+
+        return events
+
+    def get_events(self):
+        """Return all buffered events"""
+        return self.buffer.to_list()
 
 
 if __name__ == "__main__":
     """Test the ring buffer implementation"""
-    rb = RingBuffer(25)
-    print("rb size: {}".format(rb.get_size()))
+    import datetime
+
+    eb = MarathonEventBuffer(25)
+    print("eb size: {}".format(eb.get_size()))
 
     for i in range(100000):
         elem = {}
         elem['id'] = i
         elem['data'] = random.randint(1, 3000)
-        rb.append(elem)
+        elem['timestamp'] = datetime.datetime.utcnow().isoformat()
+        elem['eventType'] = 'test event'
+        elem['marathon_host'] = '127.0.0.1'
+        elem['marathon_event'] = {
+            'message': 'not part of the summary',
+            'field1': 'value 2'
+        }
+        eb.add_event(elem)
 
-    print("rb size: {}".format(rb.get_size()))
+    print("eb size: {}".format(eb.get_size()))
+    for i in eb.get_events():
+        print(i)
 
-    for i in rb:
-        print("element id: {}\t\tdata: {}".format(i['id'], i['data']))
+    print("event summary:")
+    for event in eb.get_summary_events():
+        print(event)
 
-    print("rb size: {}".format(rb.get_size()))
-    print(rb.to_list())
-
-    print(rb.pop())
-    print("rb size: {}".format(rb.get_size()))
+    print("events:")
+    for event in eb.get_events():
+        print(event)
