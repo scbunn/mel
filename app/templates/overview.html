@@ -68,6 +68,7 @@
                 <tr>
                     <th>Timestamp</th>
                     <th>Event ID</th>
+                    <th>Marathon Host</th>
                     <th>Event Type</th>
                     <th>Processed</th>
                     <th>View Event</th>
@@ -101,8 +102,14 @@
     function buildRow(event) {
       elem = [];
       elem.push('<tr>');
-      elem.push('<td>' + event.timestamp + '</td>');
+      elem.push('<td>');
+      elem.push(moment.utc(event.timestamp).fromNow());
+      elem.push('</td>');
       elem.push('<td>' + event.id + '</td>');
+      elem.push('<td>');
+      elem.push('<a href="http://' + event.marathon_host + '">');
+      elem.push(event.marathon_host);
+      elem.push('</td>');
       elem.push('<td>' + event.eventType + '</td>');
       elem.push('<td>');
       if (event.processed) {

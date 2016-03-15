@@ -1,11 +1,8 @@
 from flask import Blueprint
-from app.ringbuffer import RingBuffer
+from app.ringbuffer import MarathonEventBuffer
 
 api = Blueprint('api', __name__)
 
-# Create a ring buffer to hold events for every event type
-EVENT_BUFFERS = {
-    'marathon_events': RingBuffer(1024),
-}
+MARATHON_EVENTS = MarathonEventBuffer(1024)
 
 from . import marathon, errors

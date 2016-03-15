@@ -7,56 +7,33 @@ https://mesosphere.github.io/marathon/docs/event-bus.html
 import requests
 import sys
 from psutil import virtual_memory
-from flask import jsonify, request, abort, current_app, url_for
-from app.Models import MarathonApiEvent
+from flask import jsonify, request, current_app, url_for, abort
+from app.Models import MarathonEvent, MarathonEventBase
 from . import api
-from . import EVENT_BUFFERS as eb
-from .errors import ValidationError
+from . import MARATHON_EVENTS as mbuf
 
 
 @api.route('events/', methods=['GET'])
 def get_events():
     """Return all events currently in the buffer"""
-    response = []
-    for event in eb['marathon_events']:
-        response.append(event.export_data())
-
-    return jsonify({'events': response})
+    return jsonify({'events': mbuf.get_summary_events()})
 
 
 @api.route('events/', methods=['POST'])
 def create_event():
     """Accept incoming events and store then in a buffer to be processed"""
-    if not request.json:
-        current_app.logger.debug("Invalid request: {}".format(request))
-        raise ValidationError("Invalid request format!")
-    e = MarathonApiEvent()
-    e.import_data(request.json)
-    eb['marathon_events'].append(e)
+    e = MarathonEvent()
+    e.import_data(request)
+    mbuf.add_event(e)
     return jsonify({}), 201, {'Location': e.get_url()}
 
 
 @api.route('events/<int:event_id>')
 def get_event_by_id(event_id):
     """Return an event based on event id"""
-    for event in eb['marathon_events']:
+    for event in mbuf.get_events():
         if event.id == event_id:
-            return jsonify({'event': event.export_data()})
-    abort(404)
-
-
-@api.route('events/<event_type>')
-def get_event(event_type):
-    """Return all events of event_type"""
-    current_app.logger.debug("search for event type: {}".format(event_type))
-    elements = []
-    for elem in eb['marathon_events']:
-        if event_type in elem.event_type:
-            elements.append(elem.export_data())
-
-    if elements:
-        return jsonify({"count": len(elements),
-                        event_type: elements})
+            return jsonify(event.export_data())
     abort(404)
 
 
@@ -67,7 +44,7 @@ def generate_and_post_test_event():
         url_for('api.create_event', _external=True)))
     r = requests.post(
         url_for('api.create_event', _external=True),
-        json=MarathonApiEvent.generate_fake_event()
+        json=MarathonEventBase.generate_fake_event()
     )
     rv = {
         'status': r.status_code,
@@ -80,17 +57,16 @@ def generate_and_post_test_event():
 @api.route('health', methods=['GET'])
 def health_check():
     """return a health status of the framework"""
-    b = eb['marathon_events']
     mem = virtual_memory()
     bsize = 0
-    for e in b:
+    for e in mbuf.get_events():
         bsize += sys.getsizeof(e)
 
     response = {
         'buffers': {
-            'buffer size': b.maxlen,
-            'events buffered': b.get_size(),
-            'memory size': bsize + sys.getsizeof(b)
+            'buffer size': mbuf.buffer.maxlen,
+            'events buffered': mbuf.get_size(),
+            'memory size': bsize + sys.getsizeof(mbuf)
         },
         'memory': {
             'total': mem.total / 1048576,
