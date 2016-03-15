@@ -12,6 +12,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    MARATHON_BUFFER_SIZE = 1024
 
 
 class TestingConfig(Config):
