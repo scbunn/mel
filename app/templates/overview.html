@@ -118,25 +118,43 @@
         elem.push('<span class="label label-danger">Queued</span>');
       }
       elem.push('</td>');
-      elem.push('<td><button id="event_' + event.id + '" type="button" class="bt btn-primary btn-xs" data-toggle="modal" data-target="#event_id_modal">View Event</button></td>');
+      elem.push('<td><button data-url="' + event.url + '" type="button" class="bt btn-primary btn-xs view-event" data-toggle="modal" data-target="#event_id_modal">View Event</button></td>');
       elem.push('</tr>');
 
       return elem;
     }
 
+
+    // get the event data for the passed URL and update the modal 
+    function update_event_modal(url, modal) {
+      $.getJSON(url, function(data) { 
+        console.log("returned object for event " + url );
+        console.log(data);
+        modal.find('.modal-title').text("Event: " + data.id);
+        modal.find('pre').text(JSON.stringify(data, null, 2));
+      });
+    }
+
     $('document').ready(function() {
       // update navbar to reflect the current page
       $('div#navbar li#overview').addClass('active');
+
       var events;
-      
       $.getJSON("{{ url_for('api.get_events') }}", function(data) {
         var rows = [];
+        console.log("returned events/ objects");
         console.log(data);
         events = data;
-        $("#event_id_modal pre").text(JSON.stringify(data, null, 2));
         $.each(data['events'], function(i, event) {
           $("#marathon_events tbody").append(buildRow(event).join(""));
         });
+      });
+
+      $('#event_id_modal').on('show.bs.modal', function(event) {
+        var button = $(event.relatedTarget); //button that triggered this event
+        var url = button.data('url');
+        var modal = $(this);
+        update_event_modal(url, modal);
       });
 
     });
